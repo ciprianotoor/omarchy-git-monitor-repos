@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.ciprianotoor.omarchy-git-monitor-repos",
+  "name": "OmarchyGitMonitorRepos",
+  "version": "0.1.0",
+  "author": "Cipriano",
+  "license": "MIT",
+  "description": "Monitors unread GitHub activity for selected repositories",
+  "kinds": ["bar-widget"],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "GitHub repository monitor",
+    "description": "Unread GitHub issues, pull requests, reviews, and releases",
+    "category": "Development",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
