@@ -93,9 +93,36 @@ BarWidget {
     if (root.configuredRepos.length === 0 || notificationProcess.running) return
     root.error = ""
     notificationProcess.command = [
-      "gh", "api", "notifications?all=false&per_page=50"
+      "python", Qt.resolvedUrl("monitor.py").replace("file://", "")
     ]
     notificationProcess.running = true
+  }
+
+  function parseActivity(raw) {
+    try {
+      var result = JSON.parse(String(raw || ""))
+      root.notifications = result.activities || []
+      root.state = result.newCount > 0
+        ? result.newCount + " new GitHub change"
+          + (result.newCount === 1 ? "" : "s")
+        : (root.notifications.length > 0
+          ? "Monitoring repository activity"
+          : "No repository activity")
+      root.error = ""
+      if (result.newCount > 0) {
+        Quickshell.execDetached([
+          "omarchy-notification-send",
+          "GitHub repositories",
+          result.newCount + " new change"
+            + (result.newCount === 1 ? "" : "s")
+            + " in your monitored repositories"
+        ])
+      }
+    } catch (exception) {
+      root.notifications = []
+      root.state = "Invalid monitor response"
+      root.error = "Could not read repository activity"
+    }
   }
 
   function openNotification(item) {
@@ -133,7 +160,7 @@ BarWidget {
     id: notificationProcess
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.parseNotifications(text)
+      onStreamFinished: root.parseActivity(text)
     }
     stderr: StdioCollector {
       waitForEnd: true
