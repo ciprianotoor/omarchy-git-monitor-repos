@@ -60,6 +60,11 @@ For example, you can monitor repositories from different owners:
 }
 ```
 
+You can also click **Add repository** in the plugin panel. Omarchy opens a
+terminal where you can paste a `owner/repository` name or a GitHub URL. The
+repository is checked with `gh` before it is added, and existing repositories
+are kept.
+
 Recent activity belonging to the listed repositories is shown. The GitHub
 events API includes pushes, issues, pull requests, reviews, releases, and
 other repository activity.

@@ -141,6 +141,13 @@ BarWidget {
     Quickshell.execDetached(["xdg-open", root.configPath])
   }
 
+  function addRepository() {
+    Quickshell.execDetached([
+      "omarchy", "launch", "terminal",
+      Qt.resolvedUrl("add-repository.sh").replace("file://", "")
+    ])
+  }
+
   function tooltip() {
     if (root.error !== "") return root.error
     if (root.configuredRepos.length === 0)
@@ -290,6 +297,12 @@ BarWidget {
           foreground: root.bar.foreground
           tooltipText: "Open " + root.configPath + " in your default editor"
           onClicked: root.openConfig()
+        }
+
+        Button {
+          text: "Add repository"
+          foreground: root.bar.foreground
+          onClicked: root.addRepository()
         }
       }
     }
