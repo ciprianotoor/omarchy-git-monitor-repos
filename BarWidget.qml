@@ -14,8 +14,13 @@ BarWidget {
   property string error: ""
   property bool popupOpen: false
   readonly property int unreadCount: notifications.length
+  readonly property int attentionCount: notifications.filter(function(item) {
+    return item.attention
+  }).length
   readonly property color stateColor: error !== "" ? Color.urgent
-    : unreadCount > 0 ? "#f2cc60" : root.bar ? root.bar.foreground : Color.foreground
+    : attentionCount > 0 ? "#f2cc60"
+    : unreadCount > 0 ? "#ef4444"
+    : "#60a5fa"
   readonly property string configPath: Quickshell.env("HOME")
     + "/.config/omarchy/omarchy-git-monitor-repos.json"
 
@@ -52,11 +57,15 @@ BarWidget {
         var item = all[j]
         var repo = item && item.repository ? String(item.repository.full_name || "") : ""
         if (item && item.unread && allowed[repo.toLowerCase()]) {
+          var reason = String(item.reason || "")
           next.push({
             repo: repo,
             title: String(item.subject && item.subject.title || "GitHub activity"),
             type: String(item.subject && item.subject.type || "Notification"),
             url: root.webUrl(item.subject && item.subject.url),
+            reason: reason,
+            attention: ["assign", "mention", "review_requested", "team_mention"]
+              .indexOf(reason) >= 0,
             updatedAt: String(item.updated_at || "")
           })
         }
@@ -194,6 +203,15 @@ BarWidget {
         width: parent.width
       }
 
+      Text {
+        text: "Blue: no changes  •  Red: new activity  •  Yellow: needs attention"
+        color: Qt.darker(root.bar.foreground, 1.25)
+        font.family: root.bar.fontFamily
+        font.pixelSize: Style.font.caption
+        wrapMode: Text.WordWrap
+        width: parent.width
+      }
+
       PanelSeparator { foreground: root.bar.foreground }
 
       Text {
@@ -214,8 +232,10 @@ BarWidget {
         Button {
           required property var modelData
           width: content.width
-          text: modelData.type + " · " + modelData.repo + "\n" + modelData.title
-          foreground: root.bar.foreground
+          text: modelData.type + " · " + modelData.repo + "\n"
+            + modelData.title
+            + (modelData.attention ? "\nNeeds your attention" : "")
+          foreground: modelData.attention ? "#f2cc60" : root.bar.foreground
           horizontalPadding: Style.spacing.controlPaddingX
           verticalPadding: Style.spacing.controlPaddingY
           onClicked: root.openNotification(modelData)
@@ -232,8 +252,9 @@ BarWidget {
         }
 
         Button {
-          text: "Configure"
+          text: "Edit config"
           foreground: root.bar.foreground
+          tooltipText: "Open " + root.configPath + " in your default editor"
           onClicked: root.openConfig()
         }
       }
