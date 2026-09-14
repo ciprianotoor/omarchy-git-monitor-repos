@@ -5,6 +5,10 @@ selected list of repositories. It complements search tools such as Omni by
 providing a visible activity counter and direct links to new issues, pull
 requests, reviews, releases, and other GitHub events.
 
+The monitor reads the repositories' GitHub activity feed, so it also detects
+pushes and commits made by you. GitHub's personal notifications feed does not
+always create a notification for your own commits.
+
 ## Requirements
 
 - Omarchy 4
@@ -44,6 +48,15 @@ Edit the copied file and list repositories as `owner/name`:
 Only unread notifications belonging to the listed repositories are shown.
 The GitHub notifications API may include issues, pull requests, requested
 reviews, mentions, releases, and workflow-related activity.
+
+Repository activity is tracked locally in:
+
+```text
+~/.cache/omarchy-git-monitor-repos/state.json
+```
+
+The first refresh records the current activity as a baseline. Later refreshes
+show new activity and send an Omarchy desktop notification.
 
 ## Install
 
