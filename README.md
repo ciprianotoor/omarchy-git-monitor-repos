@@ -33,7 +33,9 @@ mkdir -p ~/.config/omarchy
 cp config.example.json ~/.config/omarchy/omarchy-git-monitor-repos.json
 ```
 
-Edit the copied file and list repositories as `owner/name`:
+Edit the copied file and list any repositories you want to monitor as
+`owner/name`. Each user can add, remove, or replace repositories in this file
+without changing the plugin:
 
 ```json
 {
@@ -42,6 +44,19 @@ Edit the copied file and list repositories as `owner/name`:
     "ciprianotoor/omarchy-mr-robot-theme"
   ],
   "refreshIntervalSec": 300
+}
+```
+
+For example, you can monitor repositories from different owners:
+
+```json
+{
+  "repos": [
+    "ciprianotoor/omarchy-media-plugin",
+    "torvalds/linux",
+    "omacom/omarchy"
+  ],
+  "refreshIntervalSec": 120
 }
 ```
 
