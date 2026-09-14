@@ -12,6 +12,7 @@ BarWidget {
   property var notifications: []
   property string state: "Not configured"
   property string error: ""
+  property int refreshIntervalSec: 300
   property bool popupOpen: false
   readonly property int unreadCount: notifications.length
   readonly property int attentionCount: notifications.filter(function(item) {
@@ -25,24 +26,30 @@ BarWidget {
     + "/.config/omarchy/omarchy-git-monitor-repos.json"
 
   function parseConfig(raw) {
+    var config
     try {
-      var config = JSON.parse(String(raw || ""))
-      var repos = config && Array.isArray(config.repos) ? config.repos : []
-      root.configuredRepos = repos.map(function(repo) {
-        return String(repo).trim()
-      }).filter(function(repo) {
-        return /^[^/]+\/[^/]+$/.test(repo)
-      })
-      root.state = root.configuredRepos.length > 0
-        ? "Ready (" + root.configuredRepos.length + " repositories)"
-        : "Add repositories to the config file"
-      root.error = ""
-      if (root.configuredRepos.length > 0) root.refresh()
+      config = JSON.parse(String(raw || "").trim())
+      if (!config || typeof config !== "object" || Array.isArray(config))
+        throw new Error("configuration must be a JSON object")
     } catch (exception) {
       root.configuredRepos = []
       root.state = "Invalid configuration"
       root.error = "Invalid JSON in " + root.configPath
+      return
     }
+
+    var repos = Array.isArray(config.repos) ? config.repos : []
+    root.configuredRepos = repos.map(function(repo) {
+      return String(repo).trim()
+    }).filter(function(repo) {
+      return /^[^/]+\/[^/]+$/.test(repo)
+    })
+    root.state = root.configuredRepos.length > 0
+      ? "Ready (" + root.configuredRepos.length + " repositories)"
+      : "Add repositories to the config file"
+    root.refreshIntervalSec = Math.max(30, parseInt(config.refreshIntervalSec, 10) || 300)
+    root.error = ""
+    if (root.configuredRepos.length > 0) root.refresh()
   }
 
   function parseNotifications(raw) {
@@ -176,7 +183,7 @@ BarWidget {
   }
 
   Timer {
-    interval: Math.max(30, parseInt(root.setting("refreshIntervalSec", 300), 10) || 300) * 1000
+    interval: root.refreshIntervalSec * 1000
     running: true
     repeat: true
     onTriggered: root.refresh()

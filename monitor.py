@@ -33,16 +33,19 @@ def main() -> int:
     activities = []
     new_count = 0
     next_state = {}
-    first_run = not bool(old_state)
-
     for repo in repos:
         events = gh_events(repo)
-        if events:
-            next_state[repo] = str(events[0].get("id", ""))
-        previous = old_state.get(repo, "")
+        previous_ids = old_state.get(repo, [])
+        if isinstance(previous_ids, str):
+            previous_ids = [previous_ids] if previous_ids else []
+        previous_ids = {str(event_id) for event_id in previous_ids}
+        first_run = not previous_ids
+        current_ids = []
         for event in events[:10]:
             event_id = str(event.get("id", ""))
-            if event_id and previous and event_id != previous:
+            if event_id:
+                current_ids.append(event_id)
+            if event_id and not first_run and event_id not in previous_ids:
                 new_count += 1
             payload = event.get("payload", {})
             activities.append(
@@ -62,6 +65,10 @@ def main() -> int:
                     in {"IssuesEvent", "PullRequestReviewEvent", "IssueCommentEvent"},
                 }
             )
+        if current_ids:
+            next_state[repo] = list(dict.fromkeys(current_ids + list(previous_ids)))[:100]
+        elif previous_ids:
+            next_state[repo] = list(previous_ids)[:100]
 
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(json.dumps(next_state), encoding="utf-8")

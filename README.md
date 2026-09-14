@@ -45,9 +45,9 @@ Edit the copied file and list repositories as `owner/name`:
 }
 ```
 
-Only unread notifications belonging to the listed repositories are shown.
-The GitHub notifications API may include issues, pull requests, requested
-reviews, mentions, releases, and workflow-related activity.
+Recent activity belonging to the listed repositories is shown. The GitHub
+events API includes pushes, issues, pull requests, reviews, releases, and
+other repository activity.
 
 Repository activity is tracked locally in:
 
