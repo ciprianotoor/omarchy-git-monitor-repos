@@ -43,7 +43,7 @@ without changing the plugin:
     "ciprianotoor/omarchy-media-plugin",
     "ciprianotoor/omarchy-mr-robot-theme"
   ],
-  "refreshIntervalSec": 300
+  "refreshIntervalSec": 60
 }
 ```
 
@@ -75,8 +75,11 @@ Repository activity is tracked locally in:
 ~/.cache/omarchy-git-monitor-repos/state.json
 ```
 
-The first refresh records the current activity as a baseline. Later refreshes
-show new activity and send an Omarchy desktop notification.
+The plugin refreshes every 60 seconds by default. Change `refreshIntervalSec`
+to use another interval (minimum 30 seconds). The first refresh records the
+current activity as a baseline. Later refreshes show new activity and send an
+Omarchy desktop notification. Use the **Refresh** button to query GitHub
+immediately.
 
 ## Install
 

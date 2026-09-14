@@ -12,8 +12,10 @@ BarWidget {
   property var notifications: []
   property string state: "Not configured"
   property string error: ""
-  property int refreshIntervalSec: 300
+  property int refreshIntervalSec: 60
   property bool popupOpen: false
+  property bool refreshing: false
+  property string lastUpdated: ""
   readonly property int unreadCount: notifications.length
   readonly property int attentionCount: notifications.filter(function(item) {
     return item.attention
@@ -47,7 +49,7 @@ BarWidget {
     root.state = root.configuredRepos.length > 0
       ? "Ready (" + root.configuredRepos.length + " repositories)"
       : "Add repositories to the config file"
-    root.refreshIntervalSec = Math.max(30, parseInt(config.refreshIntervalSec, 10) || 300)
+    root.refreshIntervalSec = Math.max(30, parseInt(config.refreshIntervalSec, 10) || 60)
     root.error = ""
     if (root.configuredRepos.length > 0) root.refresh()
   }
@@ -99,6 +101,8 @@ BarWidget {
   function refresh() {
     if (root.configuredRepos.length === 0 || notificationProcess.running) return
     root.error = ""
+    root.refreshing = true
+    root.state = "Updating GitHub activity..."
     notificationProcess.command = [
       "python", Qt.resolvedUrl("monitor.py").replace("file://", "")
     ]
@@ -115,6 +119,7 @@ BarWidget {
         : (root.notifications.length > 0
           ? "Monitoring repository activity"
           : "No repository activity")
+      root.lastUpdated = Qt.formatTime(new Date(), "HH:mm:ss")
       root.error = ""
       if (result.newCount > 0) {
         Quickshell.execDetached([
@@ -184,6 +189,7 @@ BarWidget {
       }
     }
     onExited: function(exitCode) {
+      root.refreshing = false
       if (exitCode !== 0 && root.error === "")
         root.error = "GitHub request failed; run gh auth login"
     }
@@ -236,7 +242,10 @@ BarWidget {
       }
 
       Text {
-        text: root.error !== "" ? root.error : root.state
+        text: root.error !== "" ? root.error
+          : root.state + (root.lastUpdated !== "" && !root.refreshing
+            ? " · Updated " + root.lastUpdated
+            : "")
         color: root.error !== "" ? Color.urgent : Qt.darker(root.bar.foreground, 1.35)
         font.family: root.bar.fontFamily
         font.pixelSize: Style.font.bodySmall
@@ -289,6 +298,7 @@ BarWidget {
         Button {
           text: "Refresh"
           foreground: root.bar.foreground
+          enabled: !root.refreshing
           onClicked: root.refresh()
         }
 
